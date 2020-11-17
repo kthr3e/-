@@ -1,0 +1,1 @@
+INSERT product_tbl(product_name, price) VALUES ("時計","5000")

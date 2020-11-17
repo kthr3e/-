@@ -1,0 +1,1 @@
+UPDATE `consumer_tbl` SET name="iwaki" WHERE consumer_id = 2
