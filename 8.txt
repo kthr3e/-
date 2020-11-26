@@ -1,0 +1,1 @@
+SELECT consumer_tbl.name,consumer_tbl.address FROM consumer_tbl WHERE consumer_tbl.address IN ( SELECT consumer_tbl.address FROM consumer_tbl GROUP BY address HAVING count(consumer_tbl.address) >= 3 )
