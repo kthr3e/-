@@ -1,0 +1,106 @@
+1.
+SELECT student_name,birthday FROM student_tbl WHERE MONTH(birthday) = DATE_FORMAT(NOW(),'%Y%m')
+閏年の計算は？
+毎月使えるような設計
+
+2.
+INSERT INTO student_tbl(student_name,email,tel,birthday,join_date,school_year,school_name) VALUES ('大島直子','oshima@example.com',08012121212,'2008-01-29','2020-11-28',1,'あいう中学校')
+INSERT INTO course_tbl VALUES(45,2)
+INSERT INTO course_tbl VALUES(45,3)
+
+3.
+SELECT student_name FROM student_tbl WHERE student_tbl.student_id IN ( SELECT student_id FROM course_tbl
+WHERE item_id = 2 ) AND school_year = 2 AND school_name ='いろは中学校'
+数学にした方が使い勝手がいいかも
+問題文を読み直す
+
+4.
+電話番号がint型なのでchar型にして先頭の０が入るようにする
+
+5.
+DELETE FROM student_tbl WHERE school_year=3
+UPDATE school_year SET
+  school_year=
+    CASE
+      WHEN 2 THEN 3
+      ELSE 2
+
+三年生の処理をうまくする
+
+6.
+INSERT INTO item_tbl VALUES(4,'プログラミング')
+INSERT INTO teacher_tbl VALUES('永島 紬','hlpifna_aorejk@mlfq.neth',2345678901,2)
+
+数学とプログラミング両方担当
+
+7.
+SELECT count(*)*5000 as '今月の売り上げ' FROM `course_tbl`
+
+8.
+SELECT student_tbl.student_name, 5000*count as '今月の支払い'
+FROM student_tbl,(SELECT student_id,COUNT(*) as 'count' FROM course_tbl GROUP by student_id) as count
+WHERE student_tbl.student_id = count.student_id
+
+9.
+SELECT school_year,AVG(score)
+FROM (SELECT student_id,school_year FROM student_tbl ORDER BY school_year) as id_year,
+(SELECT student_id,score FROM test_score_tbl WHERE test_id=1 AND item_id = 2) as student_score
+WHERE id_year.student_id = student_score.student_id
+GROUP BY id_year.school_year
+
+10.
+SELECT id_year.student_name
+FROM (SELECT student_id,school_year,student_name FROM student_tbl ORDER BY school_year) as id_year
+WHERE
+  NOT EXISTS(
+    SELECT student_id
+    FROM (SELECT student_id,score FROM test_score_tbl WHERE test_id=1 AND item_id = 2) as student_score
+    WHERE id_year.student_id = student_score.student_id )
+
+  AND id_year.student_id IN (
+    SELECT student_id
+    FROM course_tbl
+    WHERE item_id=2
+  )
+
+11.
+SELECT school_year,student_name,MAX(score)
+FROM (SELECT student_id,school_year,student_name FROM student_tbl ORDER BY school_year) as id_year,
+(SELECT student_id,score FROM test_score_tbl WHERE test_id=1 AND item_id = 2) as student_score
+WHERE id_year.student_id = student_score.student_id
+GROUP BY id_year.school_year
+
+
+12.
+SELECT school_year,student_name,sum(score) as '合計得点'
+FROM (SELECT student_id,school_year,student_name FROM student_tbl ORDER BY school_year) as id_year,
+(SELECT student_id,score FROM test_score_tbl WHERE test_id=1) as student_score
+WHERE id_year.student_id = student_score.student_id
+GROUP BY id_year.student_id
+ORDER BY id_year.school_year,`合計得点` DESC
+受けた科目数によって表示する順位を分けてみてもいいかも
+
+13.
+退会者を示すremove_flagと退会理由を導入
+0のときは学習塾に在籍（復帰も含む）
+１の時に退会している
+ex) id = 1 の人が退会した時
+UPDATE student_tbl
+SET remove_flag='1',reason='料金が高い'
+WHERE id = 1
+
+14.
+SELECT student_name
+FROM student_tbl,
+(SELECT school_year,AVG(score)　as a
+FROM (SELECT student_id,school_year FROM student_tbl ORDER BY school_year) as id_year,
+(SELECT student_id,score FROM test_score_tbl WHERE test_id=1 AND item_id = 2) as student_score
+WHERE id_year.student_id = student_score.student_id
+GROUP BY id_year.school_year) as mean,
+
+(SELECT school_year,student_score.student_id,score
+ FROM (SELECT student_id,school_year FROM student_tbl ORDER BY school_year) as id_year,
+ 			(SELECT student_id,score FROM test_score_tbl WHERE test_id=1 AND item_id = 2) as student_score
+ 			WHERE id_year.student_id = student_score.student_id ORDER BY school_year) as score
+
+WHERE mean.school_year = score.school_year AND mean.a <= score.student_score
